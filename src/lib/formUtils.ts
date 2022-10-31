@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { ValidationError } from "yup";
-import type { Result } from "../app";
-import type { BaseSchema } from "yup";
+import { ValidationError } from 'yup';
+import type { Result } from '../app';
+import type { BaseSchema } from 'yup';
 
 export type FormErrors = { errors?: { [k: string]: ValidationError } };
 
@@ -28,7 +28,10 @@ export function castFormData<U>(data: FormData): U {
 	return Object.fromEntries(castedEntries);
 }
 
-export const validateForm = async <T>(data: T, validator: BaseSchema): Promise<Result<T, FormErrors>> => {
+export const validateForm = async <T>(
+	data: T,
+	validator: BaseSchema
+): Promise<Result<T, FormErrors>> => {
 	try {
 		return ['ok', await validator.validate(data, { abortEarly: false })];
 	} catch (error) {

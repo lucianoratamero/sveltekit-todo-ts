@@ -55,12 +55,12 @@ const deleteTodo: Action = async ({ request }) => {
 	} catch (error) {
 		return invalid(404);
 	}
-}
+};
 
 export const actions: Actions = {
 	create: createTodo,
 	update: updateTodo,
-	delete: deleteTodo,
+	delete: deleteTodo
 };
 
 const createUpdateTodoValidator = yup.object().shape({
