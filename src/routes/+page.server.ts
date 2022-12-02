@@ -3,9 +3,20 @@ import { invalid, type Action } from '@sveltejs/kit';
 import type { FormErrors } from '$lib/formUtils';
 import { castFormData, validateForm } from '$lib/formUtils';
 import * as yup from 'yup';
+import Filter from 'bad-words';
 import db from '../../prisma/db';
 import type { Actions } from './$types';
 import type { Result } from 'src/app';
+
+const filter = new Filter();
+
+const cleanData = (validatedData: Omit<Todo, 'id'> & { id?: number }) => {
+	validatedData.title = filter.clean(validatedData.title);
+	if (validatedData.description) {
+		validatedData.description = filter.clean(validatedData.description || "");
+	}
+	return validatedData;
+}
 
 export async function load() {
 	return { todos: await db.todo.findMany({ orderBy: [{ id: 'asc' }] }) };
@@ -22,7 +33,7 @@ const createTodo: Action = async ({ request }) => {
 		return invalid(400, validatedData);
 	}
 
-	return await db.todo.create({ data: validatedData });
+	return await db.todo.create({ data: cleanData(validatedData) });
 };
 
 const updateTodo: Action = async ({ request }) => {
@@ -43,7 +54,7 @@ const updateTodo: Action = async ({ request }) => {
 
 	return await db.todo.update({
 		where: { id },
-		data
+		data: cleanData(validatedData),
 	});
 };
 
