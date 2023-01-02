@@ -4,8 +4,13 @@ import type { Result } from '../app';
 import type { BaseSchema } from 'yup';
 
 export type FormErrors = { errors?: { [k: string]: ValidationError } };
+const CAST_OPTION_VALUES = ['string', 'number', 'boolean'] as const;
+type CastOptionValue = typeof CAST_OPTION_VALUES[number];
 
-export function castFormData<U>(data: FormData): U {
+export function castFormData<T>(
+	data: FormData,
+	castOptions?: Record<keyof T, CastOptionValue>
+): T {
 	const castedEntries = [...data].map(([key, value]) => {
 		switch (value) {
 			// casting checkboxes
@@ -15,6 +20,9 @@ export function castFormData<U>(data: FormData): U {
 				return [key, false];
 
 			default:
+				if (castOptions && Object.keys(castOptions).includes(key)) {
+					return [key, castToType(value, castOptions[key as keyof T])];
+				}
 				return [
 					key,
 					// casting any string that contains a number to number
@@ -27,6 +35,13 @@ export function castFormData<U>(data: FormData): U {
 
 	return Object.fromEntries(castedEntries);
 }
+
+const castToType = (data: any, type: CastOptionValue) => {
+	if (type === 'string') return String(data);
+	if (type === 'number') return Number(data);
+	if (type === 'boolean') return Boolean(data);
+	return data;
+};
 
 export const validateForm = async <T>(
 	data: T,
